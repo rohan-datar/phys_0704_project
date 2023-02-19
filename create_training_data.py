@@ -22,7 +22,7 @@ import argparse
 CRITICAL_TEMP = 2.269
 
 """Generate a parameter file for the ON_Model"""
-def generate_params(temps, bin_size, lattice_size):
+def generate_params(temps, filename, bin_size, lattice_size):
 
     #unchange simulation parameters
     seed = 0
@@ -37,7 +37,7 @@ def generate_params(temps, bin_size, lattice_size):
     h = 0
     
     #create a parameter file for the ON_Model
-    param_file_name = 'params_t' + str(temps[0]) + '-t' + str(temps[-1]) + '.txt'
+    param_file_name = './ON_Model/params_' + filename + '.txt'
     param_file = open(param_file_name, 'w')
 
     #write the simulation parameters to the parameter file
@@ -59,7 +59,8 @@ def run_model(bin_size,
     temps = [min_temp + i*increment for i in range(int((max_temp - min_temp)/increment) + 1)]
 
     #generate a parameter file for the temperatures
-    param_file = generate_params(temps, bin_size, lattice_size)
+    filename = 't' + str(temps[0]) + '-t' + str(temps[-1])
+    param_file = generate_params(temps, filename, bin_size, lattice_size)
 
         
 
