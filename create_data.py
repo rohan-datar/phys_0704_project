@@ -6,6 +6,8 @@ The user can set the bin size, the lattice size, and the range of temperatures t
 --min_temp: the minimum temperature to generate data for
 --max_temp: the maximum temperature to generate data for
 --increment: the increment to use when generating temperatures
+--train: if this flag is set, the spin configurations will be moved to the training data directory by default the spin configurations will be moved to the training data directory
+--test: if this flag is set, the spin configurations will be moved to the test data directory
 
 Default values are set for bin_size, lattice_size, min_temp, and max_temp.
 The default values are:
@@ -18,6 +20,9 @@ The default values are:
 
 import sys
 import argparse
+import subprocess
+import shutil
+import os
 
 CRITICAL_TEMP = 2.269
 
@@ -53,7 +58,8 @@ def run_model(bin_size,
               lattice_size, 
               min_temp, 
               max_temp, 
-              increment):
+              increment,
+              data_dir):
     
     #get list of temperatures to generate data for from min_temp to max_temp
     temps = [min_temp + i*increment for i in range(int((max_temp - min_temp)/increment) + 1)]
@@ -62,7 +68,25 @@ def run_model(bin_size,
     filename = 't' + str(temps[0]) + '-t' + str(temps[-1])
     param_file = generate_params(temps, filename, bin_size, lattice_size)
 
-        
+    #run the ON_Model to generate spin configurations
+    print('Running ON_Model to generate spin configurations...')
+    sys.stdout.flush()
+    #move the parameter file to the ON_Model directory
+    shutil.move('./'+param_file, './ON_Model/'+param_file)
+
+    args = ['./ON_Model/on', filename]
+    subprocess.run(args)
+    print('Spin configurations generated.')
+    sys.stdout.flush()
+
+    #remove the parameter file
+    os.remove('./ON_Model/' + param_file + '.txt')
+
+    #move the spin configurations to the data directory
+    print('Moving spin configurations to data directory...')
+    sys.stdout.flush()
+    shutil.move('./ON_Model/spin_configs_' + filename + '.txt', data_dir + 'spin_configs_' + filename + '.txt')
+    print('Spin configurations moved to data directory.')
 
 
     
@@ -76,10 +100,23 @@ def main():
     parser.add_argument('--increment', type=float, nargs='?', default=0.1, help='Increment to use when generating temperatures')
     parser.add_argument('--min_temp', type=float, nargs='?', default=1.0, help='Minimum temperature to generate data for')
     parser.add_argument('--max_temp', type=float, nargs='?', default=5.0, help='Maximum temperature to generate data for')
+    parser.add_argument('--train', action='store_true', help='If this flag is set, the spin configurations will be moved to the training data directory by default the spin configurations will be moved to the training data directory')
+    parser.add_argument('--test', action='store_true', help='If this flag is set, the spin configurations will be moved to the test data directory')
     args = parser.parse_args()
 
+    # check whether the user has specified a test or training set
+    if args.train and args.test:
+        print('Error: Cannot specify both --train and --test')
+        sys.exit(1)
+    elif args.train:
+        args.data_dir = './data/train/'
+    elif args.test:
+        args.data_dir = './data/test/'
+    else:
+        args.data_dir = './data/train/'
+
     # Run the ON_Model to generate spin configurations
-    run_model(args.bin_size, args.lattice_size, args.min_temp, args.max_temp)
+    run_model(args.bin_size, args.lattice_size, args.min_temp, args.max_temp, args.increment, args.data_dir)
 
 
        
