@@ -45,8 +45,25 @@ def generate_params(temps, filename, bin_size, lattice_size):
     param_file_name = './ON_Model/params_' + filename + '.txt'
     param_file = open(param_file_name, 'w')
 
+    #format the parameter file
+    l1 = '#	SIMULATION PARAMETERS\n'
+    l2 = '           Temperature List = ' + str(temps) + '\n'
+    l3 = '                        Seed = ' + str(seed) +  '\n'
+    l4 = '   Number of Warm-up Sweeps = ' + str(num_warmup_sweeps) + '\n'
+    l5 = '     Sweeps per Measurement = ' + str(num_sweeps) + '\n'
+    l6 = '       Measurements per Bin = ' + str(per_bin_measurements) + '\n'
+    l7 = '             Number of Bins = ' + str(num_bins) + '\n'
+    l8 = '         Dimension of Spins = ' + str(spin_dim) + '\n'
+    l9 = '       Print Spins Configs? = '+ str(print_spin_config) + '\n\n'
+    l10 = '# LATTICE PARAMETERS\n'
+    l11 = '                D = ' + str(dim) + '\n'
+    l12 = '                L = ' + str(lattice_size) + '\n\n'
+    l13 = '# MODEL PARAMETERS\n'
+    l14 = '                J = ' + str(J_param) + '\n'
+    l15 = '                h = ' + str(h)
+
     #write the simulation parameters to the parameter file
-    param_file.write('#	SIMULATION PARAMETERS\n           Temperature List = ' + str(temps) + '\n   Number of Warm-up Sweeps = ' + str(num_warmup_sweeps) + '\n     Sweeps per Measurement = ' + str(num_sweeps) + '\n       Measurements per Bin = ' + str(per_bin_measurements) + '\n             Number of Bins = ' + str(num_bins) + '\n         Dimension of Spins = ' + str(spin_dim) + '\n       Print Spins Configs? = '+ str(print_spin_config) + '\n\n          #	LATTICE PARAMETERS\n                D = ' + str(dim) + '\n                L = ' + str(lattice_size) + '\n\n           #	MODEL PARAMETERS\n                J = ' + str(J_param) + '\n                h = ' + str(h))
+    param_file.writelines([l1, l2, l3, l4, l5, l6, l7, l8, l9, l10, l11, l12, l13, l14, l15])
 
     param_file.close()
 
@@ -70,22 +87,20 @@ def run_model(bin_size,
 
     #run the ON_Model to generate spin configurations
     print('Running ON_Model to generate spin configurations...')
-    sys.stdout.flush()
-    #move the parameter file to the ON_Model directory
-    shutil.move('./'+param_file, './ON_Model/'+param_file)
+    sys.stdout.flush()  
 
-    args = ['./ON_Model/on', filename]
-    subprocess.run(args)
+    args = ['./on', filename]
+    subprocess.run(args, cwd='./ON_Model/')
     print('Spin configurations generated.')
     sys.stdout.flush()
 
     #remove the parameter file
-    os.remove('./ON_Model/' + param_file + '.txt')
+    os.remove(param_file)
 
     #move the spin configurations to the data directory
     print('Moving spin configurations to data directory...')
     sys.stdout.flush()
-    shutil.move('./ON_Model/spin_configs_' + filename + '.txt', data_dir + 'spin_configs_' + filename + '.txt')
+    shutil.move('./ON_Model/spinConfigs_' + filename + '.txt', data_dir)
     print('Spin configurations moved to data directory.')
 
 
