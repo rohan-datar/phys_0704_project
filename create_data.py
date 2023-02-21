@@ -100,7 +100,9 @@ def run_model(bin_size,
     #move the spin configurations to the data directory
     print('Moving spin configurations to data directory...')
     sys.stdout.flush()
-    shutil.move('./ON_Model/spinConfigs_' + filename + '.txt', data_dir)
+    spin_config_file = './ON_Model/spinConfigs_' + filename + '.txt'
+    shutil.copy(spin_config_file, data_dir)
+    os.remove(spin_config_file)
     print('Spin configurations moved to data directory.')
 
 
