@@ -23,6 +23,7 @@ import argparse
 import subprocess
 import shutil
 import os
+import datetime
 
 CRITICAL_TEMP = 2.269
 
@@ -69,28 +70,36 @@ def generate_params(temps, filename, bin_size, lattice_size):
 
     return param_file_name
 
+"""Add a label to each spin configuration"""
+def label_spin_configs(data_dir, filename, temps):
+    
+        #open the spin configuration file
+        spin_config_file = open(data_dir + '/spinConfigs_' + filename + '.txt', 'r')
+    
+        #create a new file to hold the spin configurations with labels
+        spin_config_file_labeled = open(data_dir + '/spinConfigs_' + filename + '_labeled.txt', 'w')
+    
+        #get the number of spin configurations in the file
+
+      
+
 
 """Run the ON_Model to generate spin configurations"""
-def run_model(bin_size, 
-              lattice_size, 
-              min_temp, 
-              max_temp, 
-              increment,
-              data_dir):
+def run_model(args):
     
     #get list of temperatures to generate data for from min_temp to max_temp
-    temps = [min_temp + i*increment for i in range(int((max_temp - min_temp)/increment) + 1)]
+    temps = [args.min_temp + i*args.increment for i in range(int((args.max_temp - args.min_temp)/args.increment) + 1)]
 
     #generate a parameter file for the temperatures
-    filename = 't' + str(temps[0]) + '-t' + str(temps[-1])
-    param_file = generate_params(temps, filename, bin_size, lattice_size)
+    filename = 't' + str(temps[0]) + '-t' + str(temps[-1]) + datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+    param_file = generate_params(temps, filename, args.bin_size, args.lattice_size)
 
     #run the ON_Model to generate spin configurations
     print('Running ON_Model to generate spin configurations...')
     sys.stdout.flush()  
 
-    args = ['./on', filename]
-    subprocess.run(args, cwd='./ON_Model/')
+    model_args = ['./on', filename]
+    subprocess.run(model_args, cwd='./ON_Model/')
     print('Spin configurations generated.')
     sys.stdout.flush()
 
@@ -101,9 +110,14 @@ def run_model(bin_size,
     print('Moving spin configurations to data directory...')
     sys.stdout.flush()
     spin_config_file = './ON_Model/spinConfigs_' + filename + '.txt'
-    shutil.copy(spin_config_file, data_dir)
+    shutil.copy(spin_config_file, args.data_dir)
     os.remove(spin_config_file)
     print('Spin configurations moved to data directory.')
+
+    #add a label to each spin configuration
+    print('Adding labels to spin configurations...')
+    sys.stdout.flush()
+    label_spin_configs(args.data_dir, filename, temps)
 
 
     
@@ -133,7 +147,7 @@ def main():
         args.data_dir = './data/train/'
 
     # Run the ON_Model to generate spin configurations
-    run_model(args.bin_size, args.lattice_size, args.min_temp, args.max_temp, args.increment, args.data_dir)
+    run_model(args)
 
 
        
