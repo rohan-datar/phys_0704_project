@@ -72,43 +72,52 @@ def generate_params(temps, filename, bin_size, lattice_size):
 
     return param_file_name
 
+"""Generate an image from a spin configuration"""
+def generate_image(spin_config, args):
+           
+    spin_config = spin_config.split()
+    spin_config = [int (x) for x in spin_config]
+    spin_config = list(map(lambda x: 1 if x == 1 else 0, spin_config))
+    spin_config = np.array(spin_config)
+    spin_config = spin_config.reshape(args.lattice_size[0], args.lattice_size[1]).astype(np.uint8) * 255
+
+    #convert spin_config to a black and white image
+    return Image.fromarray(spin_config, '1')
+
 """Add a label to each spin configuration"""
 def process_spin_configs( filename, temps, args):
     
-        #open the spin configuration file
-        spin_config_file = open(args.data_dir + '/spinConfigs_' + filename + '.txt', 'r')
-    
-        """each temp is a label, each line is a spin configuration. Each temp has num_bins spin configurations there should be num_bins * num_temps lines in the file each spin configuration should be reshaped to a lattice_size[0] x lattice_size[1] matrix"""
-    
-        #loop through each temperature
-        for i in range(len(temps)):
-                                                                
-                #get the label for the temperature
-                if temps[i] < CRITICAL_TEMP:
-                    label = 0
-                else:
-                    label = 1
-        
-                #loop through each spin configuration for the temperature
-                for j in range(args.bin_size):
-        
-                    #get the spin configuration
-                    spin_config = spin_config_file.readline()
-        
-                    #reshape the spin configuration to a lattice_size[0] x lattice_size[1] numpy array
-                    spin_config = np.fromstring(spin_config, dtype=int, sep=' ')
-                    spin_config.map(lambda x: 1 if x == 1 else 0)
-                    print(spin_config)
-                    spin_config = spin_config.reshape(args.lattice_size[0], args.lattice_size[1]).astype(np.uint8) * 255
+    #open the spin configuration file
+    spin_config_file = open(args.data_dir + '/spinConfigs_' + filename + '.txt', 'r')
 
-                    #convert spin_config to a black and white image
-                    img = Image.fromarray(spin_config, '1')
-                    
-                    #save the image
-                    if label == 0:
-                         img.save(args.data_dir + 'less_than_critical/' + filename + '_' + str(i) + '_' + str(j) + '.png')
-                    else:
-                        img.save(args.data_dir + 'greater_than_critical/' + filename + '_' + str(i) + '_' + str(j) + '.png')
+    """each temp is a label, each line is a spin configuration. Each temp has num_bins spin configurations there should be num_bins * num_temps lines in the file each spin configuration should be reshaped to a lattice_size[0] x lattice_size[1] matrix"""
+
+    #loop through each temperature
+    for i in range(len(temps)):
+                                                            
+        #get the label for the temperature
+        if temps[i] < CRITICAL_TEMP:
+            label = 0
+        else:
+            label = 1
+
+        #loop through each spin configuration for the temperature
+        for j in range(args.bin_size):
+
+            #get the spin configuration
+            spin_config = spin_config_file.readline()
+            
+            #generate an image from the spin configuration
+            img = generate_image(spin_config, args)
+
+            #save the image
+            if label == 0:
+                    img.save(args.data_dir + 'less_than_critical/' + filename + '_' + str(i) + '_' + str(j) + '.png')
+            else:
+                img.save(args.data_dir + 'greater_than_critical/' + filename + '_' + str(i) + '_' + str(j) + '.png')
+
+    #close spin_config_file
+    spin_config_file.close()
 
 
 
