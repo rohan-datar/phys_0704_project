@@ -24,6 +24,8 @@ import subprocess
 import shutil
 import os
 import datetime
+import numpy as np
+from PIL import Image
 
 CRITICAL_TEMP = 2.269
 
@@ -71,15 +73,47 @@ def generate_params(temps, filename, bin_size, lattice_size):
     return param_file_name
 
 """Add a label to each spin configuration"""
-def label_spin_configs(data_dir, filename, temps):
+def process_spin_configs( filename, temps, args):
     
         #open the spin configuration file
-        spin_config_file = open(data_dir + '/spinConfigs_' + filename + '.txt', 'r')
+        spin_config_file = open(args.data_dir + '/spinConfigs_' + filename + '.txt', 'r')
     
-        #create a new file to hold the spin configurations with labels
-        spin_config_file_labeled = open(data_dir + '/spinConfigs_' + filename + '_labeled.txt', 'w')
+        """each temp is a label, each line is a spin configuration. Each temp has num_bins spin configurations there should be num_bins * num_temps lines in the file each spin configuration should be reshaped to a lattice_size[0] x lattice_size[1] matrix"""
     
-        #get the number of spin configurations in the file
+        #loop through each temperature
+        for i in range(len(temps)):
+                                                                
+                #get the label for the temperature
+                if temps[i] < CRITICAL_TEMP:
+                    label = 0
+                else:
+                    label = 1
+        
+                #loop through each spin configuration for the temperature
+                for j in range(args.bin_size):
+        
+                    #get the spin configuration
+                    spin_config = spin_config_file.readline()
+        
+                    #reshape the spin configuration to a lattice_size[0] x lattice_size[1] numpy array
+                    spin_config = np.fromstring(spin_config, dtype=int, sep=' ')
+                    spin_config.map(lambda x: 1 if x == 1 else 0)
+                    print(spin_config)
+                    spin_config = spin_config.reshape(args.lattice_size[0], args.lattice_size[1]).astype(np.uint8) * 255
+
+                    #convert spin_config to a black and white image
+                    img = Image.fromarray(spin_config, '1')
+                    
+                    #save the image
+                    if label == 0:
+                         img.save(args.data_dir + 'less_than_critical/' + filename + '_' + str(i) + '_' + str(j) + '.png')
+                    else:
+                        img.save(args.data_dir + 'greater_than_critical/' + filename + '_' + str(i) + '_' + str(j) + '.png')
+
+
+
+
+
 
       
 
@@ -115,9 +149,13 @@ def run_model(args):
     print('Spin configurations moved to data directory.')
 
     #add a label to each spin configuration
-    print('Adding labels to spin configurations...')
+    print('Processing to spin configurations...')
     sys.stdout.flush()
-    label_spin_configs(args.data_dir, filename, temps)
+    process_spin_configs(filename, temps, args)
+    print('Spin configurations converted to images.')
+
+    #remove the spin configuration file
+    os.remove(args.data_dir + '/spinConfigs_' + filename + '.txt')
 
 
     
