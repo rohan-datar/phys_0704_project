@@ -133,7 +133,7 @@ def run_model(args):
     temps = [args.min_temp + i*args.increment for i in range(int((args.max_temp - args.min_temp)/args.increment) + 1)]
 
     #generate a parameter file for the temperatures
-    filename = 't' + str(temps[0]) + '-t' + str(temps[-1]) + datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+    filename = 't' + str(temps[0]) + '-t' + str(temps[-1]) + datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
     param_file = generate_params(temps, filename, args.bin_size, args.lattice_size)
 
     #run the ON_Model to generate spin configurations
