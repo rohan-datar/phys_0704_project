@@ -79,8 +79,7 @@ def generate_image(spin_config, args):
     spin_config = [int (x) for x in spin_config]
     spin_config = list(map(lambda x: 1 if x == 1 else 0, spin_config))
     spin_config = np.array(spin_config)
-    spin_config = spin_config.reshape(args.lattice_size[0], args.lattice_size[1]).astype(np.uint8) * 255
-
+    spin_config = spin_config.reshape(args.lattice_size[0], args.lattice_size[1]).astype(np.uint8)
     #convert spin_config to a black and white image
     return Image.fromarray(spin_config, '1')
 
@@ -112,9 +111,9 @@ def process_spin_configs( filename, temps, args):
 
             #save the image
             if label == 0:
-                    img.save(args.data_dir + 'less_than_critical/' + filename + '_' + str(i) + '_' + str(j) + '.png')
+                    img.save(args.data_dir + 'less_than_critical/' + filename + '_' + str(i) + '_' + str(j) + '.png', 'PNG')
             else:
-                img.save(args.data_dir + 'greater_than_critical/' + filename + '_' + str(i) + '_' + str(j) + '.png')
+                img.save(args.data_dir + 'greater_than_critical/' + filename + '_' + str(i) + '_' + str(j) + '.png', 'PNG')
 
     #close spin_config_file
     spin_config_file.close()
