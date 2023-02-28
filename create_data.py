@@ -26,6 +26,7 @@ import os
 import datetime
 import numpy as np
 from PIL import Image
+from PIL.PngImagePlugin import PngInfo
 
 CRITICAL_TEMP = 2.269
 
@@ -109,11 +110,15 @@ def process_spin_configs( filename, temps, args):
             #generate an image from the spin configuration
             img = generate_image(spin_config, args)
 
+            #add temperature as image metadata
+            metadata = PngInfo()
+            metadata.add_text('Temperature', str(temps[i]))
+
             #save the image
             if label == 0:
-                    img.save(args.data_dir + 'less_than_critical/' + filename + '_' + str(i) + '_' + str(j) + '.png', 'PNG')
+                    img.save(args.data_dir + 'less_than_critical/' + filename + '_' + str(i) + '_' + str(j) + '.png', 'PNG', pnginfo=metadata)
             else:
-                img.save(args.data_dir + 'greater_than_critical/' + filename + '_' + str(i) + '_' + str(j) + '.png', 'PNG')
+                img.save(args.data_dir + 'greater_than_critical/' + filename + '_' + str(i) + '_' + str(j) + '.png', 'PNG', pnginfo=metadata)
 
     #close spin_config_file
     spin_config_file.close()
