@@ -84,17 +84,12 @@ def generate_image(spin_config, args):
     #convert spin_config to a black and white image
     return Image.fromarray(spin_config, '1')
 
-"""Add a label to each spin configuration"""
-def process_spin_configs( filename, temps, args):
-    
-    #open the spin configuration file
-    spin_config_file = open(args.data_dir + '/spinConfigs_' + filename + '.txt', 'r')
 
-    """each temp is a label, each line is a spin configuration. Each temp has num_bins spin configurations there should be num_bins * num_temps lines in the file each spin configuration should be reshaped to a lattice_size[0] x lattice_size[1] matrix"""
 
-    #loop through each temperature
+def classify_by_critical_temp(temps, filename, spin_config_file, args):
+     #loop through each temperature
     for i in range(len(temps)):
-                                                            
+                                                    
         #get the label for the temperature
         if temps[i] < CRITICAL_TEMP:
             label = 0
@@ -116,19 +111,57 @@ def process_spin_configs( filename, temps, args):
 
             #save the image
             if label == 0:
-                    img.save(args.data_dir + 'less_than_critical/' + filename + '_' + str(i) + '_' + str(j) + '.png', 'PNG', pnginfo=metadata)
+                img.save(args.data_dir + 'less_than_critical/' + filename + '_' + str(i) + '_' + str(j) + '.png', 'PNG', pnginfo=metadata)
             else:
                 img.save(args.data_dir + 'greater_than_critical/' + filename + '_' + str(i) + '_' + str(j) + '.png', 'PNG', pnginfo=metadata)
 
     #close spin_config_file
     spin_config_file.close()
 
+def classify_by_temp(temps, filename, spin_config_file, args):
+    #loop through each temperature
+    for i in range(len(temps)):
+        #check if there is an existing directory for the temperature
+        if not os.path.exists(args.data_dir + str(temps[i])):
+            #create a directory for the temperature
+            os.makedirs(args.data_dir + str(temps[i]))
+        
+        #loop through each spin configuration for the temperature
+        for j in range(args.bin_size):
+                
+                #get the spin configuration
+                spin_config = spin_config_file.readline()
+                
+                #generate an image from the spin configuration
+                img = generate_image(spin_config, args)
+    
+                #add temperature as image metadata
+                metadata = PngInfo()
+                metadata.add_text('Temperature', str(temps[i]))
+    
+                #save the image
+                img.save(args.data_dir + str(temps[i]) + '/' + filename + '_' + str(i) + '_' + str(j) + '.png', 'PNG', pnginfo=metadata)
 
+    #close spin_config_file
+    spin_config_file.close()
 
+"""Add a label to each spin configuration"""
+def process_spin_configs( filename, temps, args):
+    
+    #open the spin configuration file
+    spin_config_file = open(args.data_dir + '/spinConfigs_' + filename + '.txt', 'r')
 
+    """each temp is a label, each line is a spin configuration. Each temp has num_bins spin configurations there should be num_bins * num_temps lines in the file each spin configuration should be reshaped to a lattice_size[0] x lattice_size[1] matrix"""
 
+    #check if we want to classify by temperature or by critical temperature
+    if args.temp_classify:
+        #classify by temperature
+        classify_by_temp(temps, filename, spin_config_file, args)
+    else:
+        #classify by critical temperature
+        classify_by_critical_temp(temps, filename, spin_config_file, args)
 
-      
+   
 
 
 """Run the ON_Model to generate spin configurations"""
@@ -184,18 +217,21 @@ def main():
     parser.add_argument('--max_temp', type=float, nargs='?', default=5.0, help='Maximum temperature to generate data for')
     parser.add_argument('--train', action='store_true', help='If this flag is set, the spin configurations will be moved to the training data directory by default the spin configurations will be moved to the training data directory')
     parser.add_argument('--test', action='store_true', help='If this flag is set, the spin configurations will be moved to the test data directory')
+    parser.add_argument('--temp_classify', action='store_true', help='If this flag is set, the spin configurations will be stored in a directory based on their temperature')
     args = parser.parse_args()
 
+    if args.temp_classify:
+        args.data_dir = './data/temp_class/'
+    else:
+        args.data_dir = './data/binary_class/'
     # check whether the user has specified a test or training set
     if args.train and args.test:
         print('Error: Cannot specify both --train and --test')
         sys.exit(1)
-    elif args.train:
-        args.data_dir = './data/train/'
     elif args.test:
-        args.data_dir = './data/test/'
+        args.data_dir = args.data_dir + 'test/'
     else:
-        args.data_dir = './data/train/'
+        args.data_dir = args.data_dir + 'train/'
 
     # Run the ON_Model to generate spin configurations
     run_model(args)
