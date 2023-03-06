@@ -27,6 +27,7 @@ import datetime
 import numpy as np
 from PIL import Image
 from PIL.PngImagePlugin import PngInfo
+from matplotlib import pyplot as plt
 
 CRITICAL_TEMP = 2.269
 
@@ -80,9 +81,11 @@ def generate_image(spin_config, args):
     spin_config = [int (x) for x in spin_config]
     spin_config = list(map(lambda x: 1 if x == 1 else 0, spin_config))
     spin_config = np.array(spin_config)
-    spin_config = spin_config.reshape(args.lattice_size[0], args.lattice_size[1]).astype(np.uint8)
+    spin_config = spin_config.reshape(args.lattice_size[0], args.lattice_size[1]).astype(np.uint8) * 255
+
     #convert spin_config to a black and white image
-    return Image.fromarray(spin_config, '1')
+    return Image.fromarray(spin_config, 'L')
+
 
 
 
@@ -105,15 +108,16 @@ def classify_by_critical_temp(temps, filename, spin_config_file, args):
             #generate an image from the spin configuration
             img = generate_image(spin_config, args)
 
+
             #add temperature as image metadata
-            metadata = PngInfo()
-            metadata.add_text('Temperature', str(temps[i]))
+            # metadata = PngInfo()
+            # metadata.add_text('Temperature', str(temps[i]))
 
             #save the image
             if label == 0:
-                img.save(args.data_dir + 'less_than_critical/' + filename + '_' + str(i) + '_' + str(j) + '.png', 'PNG', pnginfo=metadata)
+                img.save(args.data_dir + 'less_than_critical/' + filename + '_' + str(i) + '_' + str(j) + '.png', 'PNG')
             else:
-                img.save(args.data_dir + 'greater_than_critical/' + filename + '_' + str(i) + '_' + str(j) + '.png', 'PNG', pnginfo=metadata)
+                img.save(args.data_dir + 'greater_than_critical/' + filename + '_' + str(i) + '_' + str(j) + '.png', 'PNG')
 
     #close spin_config_file
     spin_config_file.close()
