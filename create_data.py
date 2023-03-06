@@ -194,8 +194,12 @@ def run_model(args):
     os.remove(spin_config_file)
     print('Spin configurations moved to data directory.')
 
+    #remove bins file 
+    os.remove('./ON_Model/bins_' + filename + '.txt')
+    
+
     #add a label to each spin configuration
-    print('Processing to spin configurations...')
+    print('Processing spin configurations...')
     sys.stdout.flush()
     process_spin_configs(filename, temps, args)
     print('Spin configurations converted to images.')
