@@ -99,6 +99,13 @@ def classify_by_critical_temp(temps, filename, spin_config_file, args):
     # pylint: disable=consider-using-enumerate
     """Classify the spin configurations by whether the temperature is 
        above or below the critical temperature"""
+    
+    # create directories for the spin configurations
+    if not os.path.exists(args.data_dir + 'less_than_critical/'):
+        os.makedirs(args.data_dir + 'less_than_critical/')
+
+    if not os.path.exists(args.data_dir + 'greater_than_critical/'):
+        os.makedirs(args.data_dir + 'greater_than_critical/')
 
     # loop through each temperature
     for i in range(len(temps)):
@@ -214,6 +221,11 @@ def run_model(args):
     print('Moving spin configurations to data directory...')
     sys.stdout.flush()
     spin_config_file = './ON_Model/spinConfigs_' + filename + '.txt'
+
+    #make sure the data directory exists
+    if not os.path.exists(args.data_dir):
+        os.makedirs(args.data_dir)
+
     shutil.copy(spin_config_file, args.data_dir)
     os.remove(spin_config_file)
     print('Spin configurations moved to data directory.')
@@ -255,9 +267,9 @@ def main():
     args = parser.parse_args()
 
     if args.temp_classify:
-        args.data_dir = './data/temp_class/'
+        args.data_dir = './data/' + str(args.lattice_size[0])+ '-' + str(args.lattice_size[1]) + '/temp_class/'
     else:
-        args.data_dir = './data/binary_class/'
+        args.data_dir = './data/' + str(args.lattice_size[0])+ '-' + str(args.lattice_size[1]) + '/binary_class/'
     # check whether the user has specified a test or training set
     if args.train and args.test:
         print('Error: Cannot specify both --train and --test')
