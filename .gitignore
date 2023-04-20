@@ -3,3 +3,4 @@ ON_Model/
 *.txt
 ML_Spin_Model/*.txt
 ML_Spin_Model/results/
+generated_samples/
