@@ -20,23 +20,26 @@ def get_magnetization(filename, temps, args):
 
     for i in range(len(temps)):
         temp = float(temps[i])
-
+        magetizations = []
         # read the spin configurations for the temperature
         for j in range(args.bin_size):
-            magetizations = []
             spin_config = spin_config_file.readline().split()
             spin_config = [int(spin) for spin in spin_config]
 
             # calculate the magnetization
-            magetization = np.square(np.sum(spin_config))/len(spin_config)
+            magetization = np.square(np.sum(spin_config))/np.square(len(spin_config))
             magetizations.append(magetization)
+            # print(magetization)
 
         # calculate the average magnetization for the temperature
         avg_magetization = np.mean(magetizations)
+        # print(avg_magetization)
         avg_magetizations[temp] = avg_magetization
 
         # calculate the error in the magnetization for the temperature
-        magetizations_err[temp] = np.std(magetizations)/np.sqrt(args.bin_size)
+        magetization_err = np.std(magetizations)/np.sqrt(args.bin_size)
+        # print(magetization_err)
+        magetizations_err[temp] = magetization_err
 
     # close the file
     spin_config_file.close()

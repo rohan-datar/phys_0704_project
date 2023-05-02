@@ -40,7 +40,7 @@ def generate_params(temps, filename, bin_size, lattice_size):
     # unchange simulation parameters
     seed = 0
     num_warmup_sweeps = 1000
-    num_sweeps = 200
+    num_sweeps = 1000
     per_bin_measurements = 10
     num_bins = bin_size
     spin_dim = 1
