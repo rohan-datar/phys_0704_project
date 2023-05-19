@@ -11,10 +11,11 @@ from create_data import generate_params
 
 
 def get_magnetization(filename, temps, args):
-    #open the file
-    spin_config_file = open( # pylint: disable=unspecified-encoding
-         filename, 'r')
-    
+    # pylint: disable=consider-using-enumerate
+    # open the file
+    spin_config_file = open(  # pylint: disable=unspecified-encoding
+        filename, 'r')
+
     avg_magetizations = {}
     magetizations_err = {}
 
@@ -27,10 +28,22 @@ def get_magnetization(filename, temps, args):
             spin_config = [int(spin) for spin in spin_config]
 
             # calculate the magnetization
-            magetization = np.square(np.sum(spin_config))/np.square(len(spin_config))
+            magetization = np.square(
+                np.sum(spin_config))/np.square(len(spin_config))
             magetizations.append(magetization)
             # print(magetization)
-
+        # plot a histogram of the magnetizations
+        # mean = np.mean(magetizations)
+        # std_dev = np.std(magetizations)
+        # # clear the figure
+        # plt.clf()
+        # plt.hist(magetizations, bins=50)
+        # plt.xlabel('Magnetization')
+        # plt.ylabel('Frequency')
+        # plt.title('Magnetization Histogram for T = ' + str(temp) +
+        #           ' mean = ' + str(mean) + ' std dev = ' + str(std_dev))
+        # # save the histogram
+        # plt.savefig('./magnetization_' + str(temp) + '.pdf', format='pdf')
         # calculate the average magnetization for the temperature
         avg_magetization = np.mean(magetizations)
         # print(avg_magetization)
@@ -59,7 +72,7 @@ def main():
                         help='Number of spin configurations to generate for each temperature')
     parser.add_argument('--increment', type=float, nargs='?', default=0.1,
                         help='Increment to use when generating temperatures')
-    
+
     args = parser.parse_args()
 
     # get list of temperatures to generate data for from min_temp to max_temp
@@ -87,7 +100,8 @@ def main():
     spin_config_file = './ON_Model/spinConfigs_' + filename + '.txt'
 
     # get the magnetization for each temperature
-    avg_magetizations, magetizations_err = get_magnetization(spin_config_file, temps, args)
+    avg_magetizations, magetizations_err = get_magnetization(
+        spin_config_file, temps, args)
     # print(avg_magetizations)
     # print(magetizations_err)
 
@@ -96,20 +110,19 @@ def main():
     # plot the magnetization vs temperature
     fig, ax = plt.subplots()
 
-    ax.errorbar(list(avg_magetizations.keys()), list(avg_magetizations.values()), yerr=list(magetizations_err.values()), marker='o', color='black')
-    plt.xlabel('Temperature')
+    ax.errorbar(list(avg_magetizations.keys()), list(avg_magetizations.values(
+    )), yerr=list(magetizations_err.values()), marker='o', color='black')
+    #add a vertical line at T = 2.269
+    ax.axvline(x=2.269, color='red', linestyle='--')
+    #label the vertical line
+    ax.text(2.269, 1, '{crit}'.format(crit=r'$T_C \approx2.269...J/k_B$'), verticalalignment='center')
+    plt.xlabel('Temperature ({unit})'.format(unit=r'$k_BT/J$'))
     plt.ylabel('Magnetization ')
-
 
     matplotlib.rcParams['pdf.fonttype'] = 42
 
     fig.savefig('./magnetization.pdf', format='pdf')
-    
 
 
 if __name__ == '__main__':
     main()
-
-
-
-    
